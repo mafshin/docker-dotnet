@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2-alpine as build
+WORKDIR /app
+
+COPY *.csproj .
+RUN dotnet restore -r linux-musl-x64
+
+COPY . .
+RUN dotnet publish -c Release -r linux-musl-x64 -o out --no-restore
+
+FROM mcr.microsoft.com/dotnet/core/runtime-deps:2.2-alpine as runtime
+WORKDIR /app
+EXPOSE 80
+COPY --from=build /app/out ./
+ENTRYPOINT ["./demoapp"]
